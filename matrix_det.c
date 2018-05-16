@@ -197,7 +197,6 @@ int main (void)
         fputs("\\end{vmatrix}\n", file);
         fputs("$\n", file);
         fputs("\\end{document}\n", file);
-        fputs("pjshjl nahui\n", file);
     }
 
     else {
