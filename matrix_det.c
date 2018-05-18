@@ -1,12 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#define N 5
+
+void print_matrix(FILE *pfile ,int* pA, int n, int m) {
+    fputs("\\begin{vmatrix}\n", pfile);
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<m; ++j) {
+			if(j != m - 1) {
+//            printf("%3d &",*(pA+i*n+j));
+            fprintf(pfile,"%3d & ",*(pA+i*n+j));
+			}
+			else {
+//			printf("%3d\\\\\n ",*(pA+i*n+j));
+            fprintf(pfile,"%3d\\\\\n",*(pA+i*n+j));
+			}
+        }
+    }
+    fputs("\\end{vmatrix}\n", pfile);
+}
 
 int main (void)
 {
     //Инициализация переменных и массивов:
     setlocale(LC_ALL, "Rus");
-    int N = 5;
     int i,j,o,p, line, line2;
     long int determinant = 0;
     long int minor_det = 0;
@@ -22,8 +39,8 @@ int main (void)
 
 
     //Для работы с файлами:
-    FILE *file;
-    file = fopen("new_file.tex", "w");
+    FILE *pf;
+    pf = fopen("new_file.tex", "w");
 
     //Замазанное: ввод матрицы с клавиатуры и вывод ее в консоль:
     /*for(i = 0; i < N; ++i) {
@@ -171,38 +188,38 @@ int main (void)
     printf("\n");
 
     //Работа с файлами:
-    if(file != NULL) {
+    if(pf != NULL) {
         printf("New file created successfully\n");
-        fputs("\\documentclass{article}\n", file);
-        fputs("\\usepackage[utf8]{inputenc}\n", file);
-        fputs("\\usepackage[russian]{babel}\n", file);
-        fputs("\\usepackage{amsmath}\n", file);
-        fputs("\\usepackage{hyperref}\n", file);
-        fputs("\\begin{document}\n", file);
-        fputs("\\title{Task 1; Raschetka 3}\n", file);
-        fputs("\\date{}\n", file);
-        fputs("\\maketitle\n", file);
-        fputs("$\n", file);
-        fputs("\\begin{vmatrix}\n", file);
-        for(i = 0; i < N; ++i) {
-            for(j = 0; j < N; ++j) {
-                if(j != N - 1) {
-                    fprintf(file,"%d & ", A[i][j]);
+        fputs("\\documentclass{article}\n", pf);
+        fputs("\\usepackage[utf8]{inputenc}\n", pf);
+        fputs("\\usepackage[russian]{babel}\n", pf);
+        fputs("\\usepackage{amsmath}\n", pf);
+        fputs("\\usepackage{hyperref}\n", pf);
+        fputs("\\begin{document}\n", pf);
+        fputs("\\title{Task 1; Raschetka 3}\n", pf);
+        fputs("\\date{}\n", pf);
+        fputs("\\maketitle\n", pf);
+        fputs("$\n", pf);
+        print_matrix(pf, A, N, N);
+            fputs("=\n", pf);
+            for(i = 0; i < N; ++i) {
+                if(i%2 == 0){
+                fprintf(pf, "+\n");
                 }
                 else {
-                    fprintf(file,"%d\\\\\n", A[i][j]);
+                fprintf(pf, "-\n");
                 }
+                fprintf(pf, "%i*\n", A[0][i]);
+                print_matrix(pf, massives[i], N-1, N-1);
             }
-        }
-        fputs("\\end{vmatrix}\n", file);
-        fputs("$\n", file);
-        fputs("\\end{document}\n", file);
+        fputs("$\n", pf);
+        fputs("\\end{document}\n", pf);
     }
 
     else {
         fprintf(stderr, "Can not create a file\n");
     }
-
+    fclose(pf);
     return 0;
 }
 
