@@ -185,7 +185,7 @@ int main (void)
 
     printf("\n");
 
-    //Работа с файлами:
+    //File work:
     if(pf != NULL) {
         printf("New file created successfully\n");
         fputs("\\documentclass{article}\n", pf);
