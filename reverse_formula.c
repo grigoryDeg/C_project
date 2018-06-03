@@ -2,6 +2,19 @@
 #include <stdlib.h>
 #include <locale.h>
 #define N 4
+
+
+void print_matrix(float matrix[N][2*N]) {
+    puts("\n");
+    for(int i=0; i<N; ++i) {
+        for(int j=0; j<2*N; ++j) {
+                printf("%3.3f ", matrix[i][j]);
+        }
+        puts("\n");
+    }
+    puts("\n");
+}
+
 int main (void)
 {
     //Инициализация переменных и массивов:
@@ -9,6 +22,7 @@ int main (void)
     int A[N][N];
     int A_help[N][N];
     int A_help_transp[N][N];
+    float A_help_transp_fl[N][N];
     int i,j, line, floor;
     int determinant = 0;
     float reverse_determinant;
@@ -17,7 +31,9 @@ int main (void)
     int key;
     int key2;
     int det[N][N];
-
+    float rev_det_module;
+    float GAUSS_fl_1[N-1][N-1];
+    float GAUSS_fl_2[N-2][N-2];
 
     //Замазанное: ввод матрицы с клавиатуры и вывод ее в консоль:
     /*for(i = 0; i < N; ++i) {
@@ -131,16 +147,19 @@ int main (void)
         puts("\n");
     }
 
-    //printf("DET: %i \n\n", determinant);
-    reverse_determinant = 1/determinant;
+    printf("DET: %i \n\n", determinant);
+    reverse_determinant = 1/(float)determinant;
+
+
+    printf("reverse det : %f \n\n", reverse_determinant);
 
     //Showing reverse matrix:
     printf("Reverse matrix: \n\n");
     for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
-            A_help_transp[i][j] = (float)A_help_transp[i][j];
-            A_help_transp[i][j] = A_help_transp[i][j] * reverse_determinant;
-            printf("%6f ", A_help_transp[i][j]);
+            A_help_transp_fl[i][j] = A_help_transp[i][j];
+            A_help_transp_fl[i][j] = A_help_transp_fl[i][j] * reverse_determinant;
+            printf("%6f ", A_help_transp_fl[i][j]);
 
         }
         puts("\n");
@@ -163,6 +182,7 @@ int main (void)
 
     printf("det you needed: %i \n\n", det[2][3]);
     */
+
     return 0;
 }
 
