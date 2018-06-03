@@ -27,8 +27,13 @@ frac div_frac(frac fr1, frac fr2);
 frac mult_frac(frac fr1, frac fr2);
 frac create_frac(int num, int denom);
 void checking_det_det(int** ptM, int sizeM);
+void zero_issue(int problem_str, frac** pfrM, int rows, int cols);
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols);
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols);
 
 int main(){
+    FILE *pf;
+    pf = fopen("new_file.txt", "w");
     int **ptM = readM();
     int detM;
     if (ptM != NULL){
@@ -42,13 +47,16 @@ int main(){
         printf("HERE WE GO\n\n");
         frac** pfrM = intM_to_fracM(N, ptM);
         extendingM(pfrM, N);
-        show_fracM(pfrM, N , N*2, "Matrix of gauss:\n");
+        show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
+             print_matrix_frac(pf, pfrM, N, N*2);
         zeroing(pfrM, N, N*2);
         make_invM(pfrM, N, N*2); //sizes of extended Matrix
         show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
     }
-    else
+    else{
         printf("ptM is NULL.\n");
+    }
+        fclose(pf);
 }
 
 int** readM(){
@@ -300,14 +308,10 @@ void zeroing(frac** pfrM, int rows, int cols){
 
     vse_zanovo:
     for (i=0;i<cols/2;i++){
-        if (pfrM[i][i].num == 0)
-            for (k=0;k<rows;k++)
-                if (pfrM[k][i].num!= 0){
-                    swap_strM(i, k, pfrM);
-                    printf("We just have swaped %d è %d strings.\n", k+1, i+1);
-                    show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
-                    goto vse_zanovo;
-                }
+        if (pfrM[i][i].num == 0){
+            zero_issue(i, pfrM, rows, cols);
+            goto vse_zanovo;
+        }
         for (j=0;j<rows;j++){
             if (j != i){
                 if (pfrM[j][i].num == 0)
@@ -339,3 +343,45 @@ void make_invM(frac** pfrM, int rows, int cols){
         pfrM[i] = box;
     }
 }
+
+void zero_issue(int problem_str, frac** pfrM, int rows, int cols){
+    int k;
+    for (k=0;k<rows;k++){
+        printf("swap_loop %d %d %d\n", problem_str, k, pfrM[k][problem_str].num);
+        if (pfrM[k][problem_str].num != 0 && pfrM[problem_str][k].num != 0){
+            swap_strM(problem_str, k, pfrM);
+            printf("We just have swaped %d è %d strings.\n", k+1, problem_str+1);
+            show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
+        }
+    }
+}
+
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {
+    for(int i=0; i<rows; ++i){
+        for(int j=0; j<cols; ++j) {
+            printf("%i ", pA[i][j]);
+            fprintf(pfile, "%i ", pA[i][j]);
+            }
+        printf("\n");
+        fprintf(pfile, "\n");
+    }
+}
+
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){
+    int i, j;
+    for(i=0;i<rows;i++){
+        for(j=0;j<cols;j++) {
+            if(j != cols - 1) {
+                fprintf(pfile, "\\tfrac{%d}%d & ", pfrM[i][j].num, pfrM[i][j].denom);
+            }
+            else{
+                fprintf(pfile, "\\tfrac{%d}%d\\\\\n", pfrM[i][j].num, pfrM[i][j].denom);
+            }
+        }
+        fprintf(pfile, "\n");
+    }
+}
+
+
+
+
