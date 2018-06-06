@@ -17,7 +17,7 @@ void sum_strM(int str1, int str2, frac coeff, frac** pfrM, int sizestr);
 frac** intM_to_fracM(int sizeM, int** ptM);
 void show_fracM(frac** pfrM, int rows, int cols, char* text);
 void extendingM(frac** pfrM, int sizeM);
-void zeroing(frac** pfrM, int rows, int cols); //size - num of rows
+void zeroing(FILE *pf, frac** pfrM, int rows, int cols); //size - num of rows
 int eukl_NOD(int a, int b);
 void swap_strM(int str1, int str2, frac** pfrM);
 void reduc_frac(frac** frac_ptr_mass, int mass_size); //ñîêðàùåíèå äðîáåé
@@ -33,7 +33,7 @@ void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols);
 
 int main(){
     FILE *pf;
-    pf = fopen("new_file.txt", "w");
+    pf = fopen("new_file.tex", "w");
     int **ptM = readM();
     int detM;
     if (ptM != NULL){
@@ -42,16 +42,46 @@ int main(){
             printf("The determinant of this matrix is zero, so it's impossible to find invers of it.\n");
             exit(EXIT_SUCCESS);
         }
-        else
-            printf("Determinant of the Matrix is not null, so we'll continue...\n");
-        printf("HERE WE GO\n\n");
-        frac** pfrM = intM_to_fracM(N, ptM);
-        extendingM(pfrM, N);
-        show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
-             print_matrix_frac(pf, pfrM, N, N*2);
-        zeroing(pfrM, N, N*2);
-        make_invM(pfrM, N, N*2); //sizes of extended Matrix
-        show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
+        else {
+            if(pf != NULL) {
+                printf("New file created successfully\n");
+                fputs("\\documentclass{article}\n", pf);
+                fputs("\\usepackage[utf8]{inputenc}\n", pf);
+                fputs("\\usepackage[russian]{babel}\n", pf);
+                fputs("\\usepackage{amsmath}\n", pf);
+                fputs("\\usepackage{hyperref}\n", pf);
+                fputs("\\newenvironment{comment}{}{}\n", pf);
+                fputs("\\textwidth= 18 cm\n", pf);
+                fputs("\\oddsidemargin= -0.5 cm\n", pf);
+                fputs("\\mathsurround=2pt\n", pf);
+                fputs("\\renewcommand{\\baselinestretch}{2.0}\n", pf);
+                fputs("\\begin{document}\n", pf);
+                fputs("\\title{Task 2; Raschetka 3}\n", pf);
+                fputs("\\date{}\n", pf);
+                fputs("\\maketitle\n", pf);
+                    printf("Determinant of the Matrix is not null, so we'll continue...\n");
+                    printf("HERE WE GO\n\n");
+                        fputs("\\noindent Matrix of integers:\\\\[6pt] \n", pf);
+                        fputs("$\n", pf);
+                        print_matrix(pf, ptM, N, N);
+                        fputs("$\\\\[6pt] \n", pf);
+                    frac** pfrM = intM_to_fracM(N, ptM);
+                    extendingM(pfrM, N);
+                    show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
+                        fputs("Gauss matrix:\\\\[6pt] \n", pf);
+                        print_matrix_frac(pf, pfrM, N, 2*N);
+                    zeroing(pf, pfrM, N, N*2);
+                    make_invM(pfrM, N, N*2); //sizes of extended Matrix
+                        fputs("Now we're deviding each row to coefficients we need\\\\[6pt] \n", pf);
+                    show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
+                        fputs("And finally, we have the Matrix:\\\\[6pt] \n", pf);
+                    print_matrix_frac(pf, pfrM, N, N);
+                        fputs("\\end{document}\n", pf);
+            }
+            else {
+                fprintf(stderr, "Can not create a file\n");
+            }
+        }
     }
     else{
         printf("ptM is NULL.\n");
@@ -302,7 +332,7 @@ frac create_frac(int num, int denom){
     return box;
 }
 
-void zeroing(frac** pfrM, int rows, int cols){
+void zeroing(FILE *pf, frac** pfrM, int rows, int cols){
     int i, j, k;
     frac cff;
 
@@ -318,9 +348,11 @@ void zeroing(frac** pfrM, int rows, int cols){
                     continue;
                 cff = div_frac(pfrM[i][i], pfrM[j][i]);
                 printf("We're subtracting %d from %d string with coefficient %d/%d\n", j+1, i+1, cff.num, cff.denom);
+                fprintf(pf,"We're subtracting %d from %d string with coefficient %d/%d: \n", j+1, i+1, cff.num, cff.denom);
                 cff.num = -cff.num; //for vychitanie strok
                 sum_strM(j, i, cff, pfrM, cols);
                 show_fracM(pfrM, rows, cols, "Result:\n");
+                print_matrix_frac(pf, pfrM, rows, cols);
             }
         }
     }
@@ -357,18 +389,28 @@ void zero_issue(int problem_str, frac** pfrM, int rows, int cols){
 }
 
 void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {
+    fputs("\\begin{vmatrix}\n", pfile);
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j) {
-            printf("%i ", pA[i][j]);
-            fprintf(pfile, "%i ", pA[i][j]);
+            if( j != cols - 1) {
+                // printf("%i ", pA[i][j]);
+                fprintf(pfile, "%i & ", pA[i][j]);
             }
-        printf("\n");
+            else{
+                 // printf("%i ", pA[i][j]);
+                fprintf(pfile, "%i\\\\ ", pA[i][j]);
+            }
+            }
+        //printf("\n");
         fprintf(pfile, "\n");
     }
+    fputs("\\end{vmatrix}\n", pfile);
 }
 
 void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){
     int i, j;
+    fputs("$\n", pfile);
+    fputs("\\begin{vmatrix}\n", pfile);
     for(i=0;i<rows;i++){
         for(j=0;j<cols;j++) {
             if(j != cols - 1) {
@@ -380,7 +422,13 @@ void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){
         }
         fprintf(pfile, "\n");
     }
+    fputs("\\end{vmatrix}\n", pfile);
+    fputs("$\\\\[6pt] \n",pfile);
 }
+
+
+
+
 
 
 
