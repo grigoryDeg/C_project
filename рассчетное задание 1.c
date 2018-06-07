@@ -37,9 +37,9 @@ int main() {
     int det = (m1*m5*m9)+(m4*m8*m3)+(m2*m6*m7)-(m7*m5*m3)-(m8*m6*m1)-(m2*m4*m9);
 
     fprintf(f,"Получившаяся матрица: \n");
-    fprintf(f,"|%d %d %d|\n", matrix[0][0], matrix[0][1], matrix[0][2]);
-    fprintf(f,"|%d %d %d|= %d + %d + %d - %d - %d - %d = %d\n", matrix[1][0], matrix[1][1], matrix[1][2],m1*m5*m9, m2*m6*m7, m3*m4*m8, m7*m5*m3, m2*m4*m9, m1*m6*m8,  det);
-    fprintf(f,"|%d %d %d|\n", matrix[2][0], matrix[2][1], matrix[2][2]);
+    fprintf(f,"|%2d %2d %2d|\n", matrix[0][0], matrix[0][1], matrix[0][2]);
+    fprintf(f,"|%2d %2d %2d|= %d + %d + %d - %d - %d - %d = %d\n", matrix[1][0], matrix[1][1], matrix[1][2],m1*m5*m9, m2*m6*m7, m3*m4*m8, m7*m5*m3, m2*m4*m9, m1*m6*m8,  det);
+    fprintf(f,"|%2d %2d %2d|\n", matrix[2][0], matrix[2][1], matrix[2][2]);
 
     fprintf(f,"Определитель матрицы:");
     fprintf(f,"%d\n", det);

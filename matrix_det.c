@@ -8,11 +8,9 @@ void print_matrix(FILE *pfile ,int* pA, int n, int m) {
     for(int i=0; i<n; ++i) {
         for(int j=0; j<m; ++j) {
             if(j != m - 1) {
-//            printf("%3d &",*(pA+i*n+j));
                 fprintf(pfile,"%3d & ",*(pA+i*n+j));
             }
             else {
-//			printf("%3d\\\\\n ",*(pA+i*n+j));
                 fprintf(pfile,"%3d\\\\\n",*(pA+i*n+j));
             }
         }
@@ -22,7 +20,7 @@ void print_matrix(FILE *pfile ,int* pA, int n, int m) {
 
 int main (void)
 {
-    //Initializing values and massives:
+    //Инициализация значений и массивов
     setlocale(LC_ALL, "Rus");
     int i,j,o,p, line, line2;
     long int determinant = 0;
@@ -36,11 +34,11 @@ int main (void)
     int det[N][N-1];
     int minor_dets[N];
 
-    //For file work:
+    //Добавление файла к работе
     FILE *pf;
     pf = fopen("new_file.tex", "w");
 
-    //Hidden: taking matrix to terminal:
+    //Прием матрицы на терминал
     /*for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
             scanf("%3d", &p);
@@ -53,13 +51,12 @@ int main (void)
             printf("%3d ",A[i][j]);
         }
         puts("\n");
-    }
-    */
+    }*/
 
-    //Showing random matrix 5*5:
+    //Отображение случайной матрицы 5х5
     for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
-            A[i][j] = rand() % 30 + 1;
+            A[i][j] = rand() % 30 + 1;                                //рандом от 1 до 30
             printf("%3d ",A[i][j]);
         }
         puts("\n");
@@ -67,7 +64,7 @@ int main (void)
 
     printf("\n\n");
 
-    //Taking out floors and lines of matrix 4*4:
+    //Вычеркивание строк и столбцов, получение матрицы 4*4
     for(line = 0; line < N; ++line) {
         for(i = 1; i < N; ++i) {
             for(j = 0; j < N; ++j) {
@@ -77,24 +74,20 @@ int main (void)
                         MASS[i-1][j] = A[i][j];
                         /*printf("%3d ", MASS[i-1][j]);*/
                         massives[line][i-1][j] = MASS[i-1][j];
-
                     }
                     else {
                         MASS[i-1][j-1] = A[i][j];
                         /* printf("%3d ", MASS[i-1][j-1]);*/
                         massives[line][i-1][j-1] = MASS[i-1][j-1];
                     }
-
                 }
             }
             /*puts("\n");*/
-
-
         }
 //       printf("\n\n");
     }
 
-    //Taking out floors and lines of matrix 3*3:
+    //Вычеркиваем строки и столбцы, получаем матрицу 3*3
     for(line = 0; line < N; ++line) {
         for(line2 = 0; line2 < N - 1; ++line2)  {
             for(i = 1; i < N - 1; ++i) {
@@ -104,7 +97,6 @@ int main (void)
                             MASS2[i-1][j] = massives[line][i][j];
                             /* printf("%3d ", MASS2[i-1][j]);*/
                             massives_little[line][line2][i-1][j] = MASS2[i-1][j];
-
                         }
                         else {
                             MASS2[i-1][j-1] = massives[line][i][j];
@@ -119,7 +111,7 @@ int main (void)
         }
     }
 
-    //Calculating determinant of matrix'es 3*3, saving them to massives:
+    //Вычисление матрицы 3*3, запись в массивы
     for(line = 0; line < N; ++line) {
         for(line2 = 0; line2 < N -1; ++line2) {
             det[line][line2] = massives_little[line][line2][0][0]*massives_little[line][line2][1][1]*massives_little[line][line2][2][2] +
@@ -131,7 +123,7 @@ int main (void)
         }
     }
 
-    //Calculating determinant of matrix'es 4*4, saving them to massives:
+    //Вычисление матрицы 4*4 и запись их в массивы
     for(line = 0; line < N;  ++line) {
         for(line2 = 0; line2 < N-1; ++line2 ) {
             if(line2%2 == 0) {
@@ -144,8 +136,7 @@ int main (void)
         minor_dets[line] = minor_det;
         minor_det = 0;
     }
-
-    //Calculating determinant of matrix 5*5:
+    //Вычислить определитель матрицы 5 * 5:
     for(line = 0; line < N;  ++line) {
         if(line%2 == 0) {
             determinant = determinant + minor_dets[line]*A[0][line];
@@ -155,7 +146,7 @@ int main (void)
         }
     }
 
-    //Different verifications:
+    //Дополнительные проверки
     /*printf(" Show needed minor 4*4 :\n\n");
     for(o = 0; o < N-1; ++o) {
         for(p = 0; p < N-1; ++p) {
@@ -175,17 +166,17 @@ int main (void)
     } */
 
     printf("\n");
-    printf("Calculate determinant of needed matrix 3*3: %i\n", det[1][2]);
+    printf("Calculate determinant of needed matrix 3*3: %i\n", det[1][2]);           //Вычислить определитель необходимой матрицы 3 * 3:
 
     printf("\n");
-    printf("Calculate determinant of needed matrix 4*4: %i\n", minor_dets[0]);
+    printf("Calculate determinant of needed matrix 4*4: %i\n", minor_dets[0]);      //Вычислить определитель необходимой матрицы 4 * 4:
 
     printf("\n");
     printf("ANSWER: %li\n", determinant);
 
     printf("\n");
 
-    //File work:
+    //Работа с Latex
     if(pf != NULL) {
         printf("New file created successfully\n");
         fputs("\\documentclass{article}\n", pf);
@@ -198,7 +189,7 @@ int main (void)
         fputs("\\mathsurround=2pt\n", pf);
         fputs("\\renewcommand{\\baselinestretch}{2.0}\n", pf);
         fputs("\\begin{document}\n", pf);
-        fputs("\\title{Task 1; Raschetka 3}\n", pf);
+        fputs("\\title{Task 1; Settlement task 3}\n", pf);
         fputs("\\date{}\n", pf);
         fputs("\\maketitle\n", pf);
         fputs("$\n", pf);
@@ -216,7 +207,6 @@ int main (void)
         }
         fputs("$\n", pf);
         fputs("=\n", pf);
-        //
         fputs("$$\n", pf);
         fputs("=\n", pf);
         for(i = 0; i < N; ++i) {
@@ -272,12 +262,10 @@ int main (void)
         fputs("\\end{enumerate}\n", pf);
         fprintf(pf, "ANSWER: %i", determinant);
         fputs("\\end{document}\n", pf);
-
     }
     else {
         fprintf(stderr, "Can not create a file\n");
     }
-
     fclose(pf);
 
     return 0;
