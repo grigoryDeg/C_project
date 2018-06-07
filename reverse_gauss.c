@@ -5,30 +5,35 @@
 #define MAX_NUM_LENGTH 10 //with minus
 
 typedef struct {
-    int num; //÷èñëèòåëü
-    int denom; //çíàìåíàòåëü
-}frac; //fraction - äðîáü, ëîë
+    int num; //числитель
+    int denom; //знаменатель
+}frac; //fraction
 
-int** readM();
-void show_intM(int** ptM, int sizeM, char* text);
-int** cutM(int row, int col, int** ptM);
-int find(int* mass, int size, int quest);
+int** readM();                                             //функция, которая возвращает массив(матрицу), и в нее ничего не предается
+void show_intM(int** ptM, int sizeM, char* text);          //выводить в консоль матрицу
+int** cutM(int row, int col, int** ptM);                   //функция, которая вырезает
+int find(int* mass, int size, int quest);                  //функция, которая находит энный элемент, и возвращает его, если он найден
 void sum_strM(int str1, int str2, frac coeff, frac** pfrM, int sizestr);
 frac** intM_to_fracM(int sizeM, int** ptM);
 void show_fracM(frac** pfrM, int rows, int cols, char* text);
 void extendingM(frac** pfrM, int sizeM);
-void zeroing(frac** pfrM, int rows, int cols); //size - num of rows
-int eukl_NOD(int a, int b);
-void swap_strM(int str1, int str2, frac** pfrM);
-void reduc_frac(frac** frac_ptr_mass, int mass_size); //ñîêðàùåíèå äðîáåé
-void make_invM(frac** pfrM, int rows, int cols);
-frac sum_frac(frac fr1, frac fr2);
-frac div_frac(frac fr1, frac fr2);
-frac mult_frac(frac fr1, frac fr2);
-frac create_frac(int num, int denom);
-void checking_det_det(int** ptM, int sizeM);
+void zeroing(FILE *pf, frac** pfrM, int rows, int cols);             //функция, которая зануляет столбец, ниже какого-то элемента
+int eukl_NOD(int a, int b);                                          //функция сокращение дробей
+void swap_strM(int str1, int str2, frac** pfrM);                           //замена строк
+void reduc_frac(frac** frac_ptr_mass, int mass_size);
+void make_invM(frac** pfrM, int rows, int cols);                           //функция, которая изменяет вид матрицы из 4*8 в 4*4
+frac sum_frac(frac fr1, frac fr2);                                          //суммирование
+frac div_frac(frac fr1, frac fr2);                                          //деление
+frac mult_frac(frac fr1, frac fr2);                                         //умножение
+frac create_frac(int num, int denom);                                       //создание простой дроби
+void checking_det_det(int** ptM, int sizeM);                                //проверка опредеелитля минора на знак
+void zero_issue(int problem_str, frac** pfrM, int rows, int cols);          //функция устраняет ошибки
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols);               //матрица выводит целые числа
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols);       //функция, котора выводит в Лате
 
 int main(){
+    FILE *pf;
+    pf = fopen("new_file.tex", "w");
     int **ptM = readM();
     int detM;
     if (ptM != NULL){
@@ -37,18 +42,51 @@ int main(){
             printf("The determinant of this matrix is zero, so it's impossible to find invers of it.\n");
             exit(EXIT_SUCCESS);
         }
-        else
-            printf("Determinant of the Matrix is not null, so we'll continue...\n");
-        printf("HERE WE GO\n\n");
-        frac** pfrM = intM_to_fracM(N, ptM);
-        extendingM(pfrM, N);
-        show_fracM(pfrM, N , N*2, "Matrix of gauss:\n");
-        zeroing(pfrM, N, N*2);
-        make_invM(pfrM, N, N*2); //sizes of extended Matrix
-        show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
+        else {
+            if(pf != NULL) {
+                printf("New file created successfully\n");
+                fputs("\\documentclass{article}\n", pf);
+                fputs("\\usepackage[utf8]{inputenc}\n", pf);
+                fputs("\\usepackage[russian]{babel}\n", pf);
+                fputs("\\usepackage{amsmath}\n", pf);
+                fputs("\\usepackage{hyperref}\n", pf);
+                fputs("\\newenvironment{comment}{}{}\n", pf);
+                fputs("\\textwidth= 18 cm\n", pf);
+                fputs("\\oddsidemargin= -0.5 cm\n", pf);
+                fputs("\\mathsurround=2pt\n", pf);
+                fputs("\\renewcommand{\\baselinestretch}{2.0}\n", pf);
+                fputs("\\begin{document}\n", pf);
+                fputs("\\title{Task 2; Settlement task 3}\n", pf);
+                fputs("\\date{}\n", pf);
+                fputs("\\maketitle\n", pf);
+                    printf("Determinant of the Matrix is not null, so we'll continue...\n");
+                    printf("HERE WE GO\n\n");
+                        fputs("\\noindent Matrix of integers:\\\\[6pt] \n", pf);
+                        fputs("$\n", pf);
+                        print_matrix(pf, ptM, N, N);
+                        fputs("$\\\\[6pt] \n", pf);
+                    frac** pfrM = intM_to_fracM(N, ptM);
+                    extendingM(pfrM, N);
+                    show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
+                        fputs("Gauss matrix:\\\\[6pt] \n", pf);
+                        print_matrix_frac(pf, pfrM, N, 2*N);
+                    zeroing(pf, pfrM, N, N*2);
+                    make_invM(pfrM, N, N*2); //sizes of extended Matrix
+                        fputs("Now we're deviding each row to coefficients we need\\\\[6pt] \n", pf);
+                    show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
+                        fputs("And finally, we have the Matrix:\\\\[6pt] \n", pf);
+                    print_matrix_frac(pf, pfrM, N, N);
+                        fputs("\\end{document}\n", pf);
+            }
+            else {
+                fprintf(stderr, "Can not create a file\n");
+            }
+        }
     }
-    else
+    else{
         printf("ptM is NULL.\n");
+    }
+        fclose(pf);
 }
 
 int** readM(){
@@ -70,8 +108,8 @@ int** readM(){
         printf("Extracting from file:\n");
         char filename[] = "M.txt",
             symb,
-            box[MAX_NUM_LENGTH]; //it's char massive for long (more than one symbol) numbers
-        int fst_c_of_n = 0; //value of 'j' (pos in string) at first char of current num
+            box[MAX_NUM_LENGTH]; //это массив для длинного (более одного символа) номера
+        int fst_c_of_n = 0; //значение 'j' (pos в строке) при первом значении текущего num
         printf("\tOpening file...\n");
         FILE *FwithM = fopen(filename, "r");
         if (FwithM != NULL){
@@ -79,7 +117,7 @@ int** readM(){
             for(i=0;i<N;i++){
                 ptM[i] = malloc(N * sizeof(int));
                 num_cntr = 0;
-                for(j=0;num_cntr<N;j++){ //N+1 because of \n in the end of every string
+                for(j=0;num_cntr<N;j++){ //N + 1 из-за \ n в конце каждой строки
                     symb = fgetc(FwithM);
                     if ((symb >= 48 && symb <= 57) || symb ==45){
                         if (fst_c_of_n == -1)//45 - '-', 48 - '0', 57 - '9', 10 - '\n'
@@ -143,7 +181,7 @@ int** cutM(int row, int col, int** ptM){
     return ptcM;
 }
 
-int find(int* mass, int size, int quest){
+int find(int* mass, int size, int quest){                                //функция, которая находит энный элемент, и возвращает его, если он найден
     int i;
     for(i = 0; i<size;i++)
         if (mass[i] == quest)
@@ -224,8 +262,8 @@ void extendingM(frac** pfrM, int sizeM){
     }
 }
 
-int eukl_NOD(int a, int b){
-    a = abs(a);
+int eukl_NOD(int a, int b){                                            //сокращение дробей
+    a = abs(a);                                                       //модуль
     b = abs(b);
     while (a != 0 && b != 0){
         if (a > b)
@@ -242,7 +280,7 @@ void swap_strM(int str1, int str2, frac** pfrM){
     pfrM[str2] = box;
 }
 
-void reduc_frac(frac** frac_ptr_mass, int mass_size){
+void reduc_frac(frac** frac_ptr_mass, int mass_size){                               //сокращение дробей                                 //
     int i, NOD;
     for (i=0;i<mass_size;i++){
         NOD = eukl_NOD(frac_ptr_mass[i][0].num, frac_ptr_mass[i][0].denom);
@@ -263,7 +301,7 @@ frac sum_frac(frac fr1, frac fr2){
     return fr1;
 }
 
-frac div_frac(frac fr1, frac fr2){
+frac div_frac(frac fr1, frac fr2){                                        //деление                               //
     if (fr2.num == 0){
         printf("Divison by zero.\n");
         exit(EXIT_FAILURE);
@@ -279,7 +317,7 @@ frac div_frac(frac fr1, frac fr2){
     return fr1;
 }
 
-frac mult_frac(frac fr1, frac fr2){
+frac mult_frac(frac fr1, frac fr2){                              //умножение
     fr1.num *= fr2.num;
     fr1.denom *= fr2.denom;
     frac* mass[] = {&fr1};
@@ -287,36 +325,34 @@ frac mult_frac(frac fr1, frac fr2){
     return fr1;
 }
 
-frac create_frac(int num, int denom){
+frac create_frac(int num, int denom){                            //создание простой дроби
     frac box;
     box.num = num;
     box.denom = denom;
     return box;
 }
 
-void zeroing(frac** pfrM, int rows, int cols){
+void zeroing(FILE *pf, frac** pfrM, int rows, int cols){                    //функция, которая зануляет столбец, ниже какого-то элемента
     int i, j, k;
     frac cff;
 
     vse_zanovo:
     for (i=0;i<cols/2;i++){
-        if (pfrM[i][i].num == 0)
-            for (k=0;k<rows;k++)
-                if (pfrM[k][i].num!= 0){
-                    swap_strM(i, k, pfrM);
-                    printf("We just have swaped %d è %d strings.\n", k+1, i+1);
-                    show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
-                    goto vse_zanovo;
-                }
+        if (pfrM[i][i].num == 0){
+            zero_issue(i, pfrM, rows, cols);
+            goto vse_zanovo;
+        }
         for (j=0;j<rows;j++){
             if (j != i){
                 if (pfrM[j][i].num == 0)
                     continue;
                 cff = div_frac(pfrM[i][i], pfrM[j][i]);
                 printf("We're subtracting %d from %d string with coefficient %d/%d\n", j+1, i+1, cff.num, cff.denom);
+                fprintf(pf,"We're subtracting %d from %d string with coefficient %d/%d: \n", j+1, i+1, cff.num, cff.denom);
                 cff.num = -cff.num; //for vychitanie strok
                 sum_strM(j, i, cff, pfrM, cols);
                 show_fracM(pfrM, rows, cols, "Result:\n");
+                print_matrix_frac(pf, pfrM, rows, cols);
             }
         }
     }
@@ -328,7 +364,7 @@ void zeroing(frac** pfrM, int rows, int cols){
     }
 }
 
-void make_invM(frac** pfrM, int rows, int cols){
+void make_invM(frac** pfrM, int rows, int cols){                                        //функция, которая изменяет вид матрицы из 4*8 в 4*4
     int i, j,
         true_size = cols/2;
     frac *box;
@@ -338,4 +374,54 @@ void make_invM(frac** pfrM, int rows, int cols){
             box[j-true_size] = pfrM[i][j];
         pfrM[i] = box;
     }
+}
+
+void zero_issue(int problem_str, frac** pfrM, int rows, int cols){                          //функция устраняет ошибки
+    int k;
+    for (k=0;k<rows;k++){
+        printf("swap_loop %d %d %d\n", problem_str, k, pfrM[k][problem_str].num);
+        if (pfrM[k][problem_str].num != 0 && pfrM[problem_str][k].num != 0){
+            swap_strM(problem_str, k, pfrM);
+            printf("We just have swaped %d è %d strings.\n", k+1, problem_str+1);
+            show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
+        }
+    }
+}
+
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {                //матрица выводит целые числа
+    fputs("\\begin{vmatrix}\n", pfile);
+    for(int i=0; i<rows; ++i){
+        for(int j=0; j<cols; ++j) {
+            if( j != cols - 1) {
+                // printf("%i ", pA[i][j]);
+                fprintf(pfile, "%i & ", pA[i][j]);
+            }
+            else{
+                 // printf("%i ", pA[i][j]);
+                fprintf(pfile, "%i\\\\ ", pA[i][j]);
+            }
+            }
+        //printf("\n");
+        fprintf(pfile, "\n");
+    }
+    fputs("\\end{vmatrix}\n", pfile);
+}
+
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){              //функция, котора выводит в Латех
+    int i, j;
+    fputs("$\n", pfile);
+    fputs("\\begin{vmatrix}\n", pfile);
+    for(i=0;i<rows;i++){
+        for(j=0;j<cols;j++) {
+            if(j != cols - 1) {
+                fprintf(pfile, "\\tfrac{%d}%d & ", pfrM[i][j].num, pfrM[i][j].denom);
+            }
+            else{
+                fprintf(pfile, "\\tfrac{%d}%d\\\\\n", pfrM[i][j].num, pfrM[i][j].denom);             //tfrac - дробь в Латехе
+            }
+        }
+        fprintf(pfile, "\n");
+    }
+    fputs("\\end{vmatrix}\n", pfile);
+    fputs("$\\\\[6pt] \n",pfile);
 }
