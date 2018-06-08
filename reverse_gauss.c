@@ -30,6 +30,11 @@ void checking_det_det(int** ptM, int sizeM);
 void zero_issue(int problem_str, frac** pfrM, int rows, int cols);
 void print_matrix(FILE *pfile ,int** pA, int rows, int cols);
 void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols);
+int** get_matrix(int rows, int cols);
+int** multiply_matrix (int **A, int **B, int rowsA, int colsA, int rowsB, int colsB);
+frac** multiply_matrix_frac (frac **A, frac **B, int rowsA, int colsA, int rowsB, int colsB);
+frac** intM_to_fracM_dop(int rows, int cols, int** ptM);
+
 
 int main(){
     FILE *pf;
@@ -77,6 +82,16 @@ int main(){
                         fputs("And finally, we have the Matrix:\\\\[6pt] \n", pf);
                     print_matrix_frac(pf, pfrM, N, N);
                         fputs("\\end{document}\n", pf);
+
+                        puts("\n");
+                    int** H = get_matrix(4, 1);
+                    frac** ptH = intM_to_fracM_dop(N, 1, H);
+                    frac** X = multiply_matrix_frac(pfrM , ptH, N, N, N, 1);
+                    show_fracM(X, N, 1 , "Multiplied matrix (X) : \n");
+                    frac ** original = intM_to_fracM(N, ptM);
+                    //show_fracM(multiply_matrix_frac(pfrM, original, N, N, N, N), N, N, "dadada ya\n");
+                    show_fracM(multiply_matrix_frac(original, X, N, N, N, 1), N, 1, "LET'S CHECK: \n");
+
             }
             else {
                 fprintf(stderr, "Can not create a file\n");
@@ -318,10 +333,13 @@ frac div_frac(frac fr1, frac fr2){
 }
 
 frac mult_frac(frac fr1, frac fr2){
+    //printf("%d/%d ", fr1.num, fr1.denom);
+    //printf("%d/%d ", fr2.num, fr2.denom);
     fr1.num *= fr2.num;
     fr1.denom *= fr2.denom;
     frac* mass[] = {&fr1};
     reduc_frac(mass, 1);
+    //printf("%d/%d\n", fr1.num, fr1.denom);
     return fr1;
 }
 
@@ -379,7 +397,7 @@ void make_invM(frac** pfrM, int rows, int cols){
 void zero_issue(int problem_str, frac** pfrM, int rows, int cols){
     int k;
     for (k=0;k<rows;k++){
-        printf("swap_loop %d %d %d\n", problem_str, k, pfrM[k][problem_str].num);
+        //printf("swap_loop %d %d %d\n", problem_str, k, pfrM[k][problem_str].num);
         if (pfrM[k][problem_str].num != 0 && pfrM[problem_str][k].num != 0){
             swap_strM(problem_str, k, pfrM);
             printf("We just have swaped %d è %d strings.\n", k+1, problem_str+1);
@@ -426,6 +444,90 @@ void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){
     fputs("$\\\\[6pt] \n",pfile);
 }
 
+int** get_matrix(int rows, int cols) {
+    int i, j;
+    int **M = malloc(rows * sizeof(int*));
+        for(i=0;i<rows;i++){
+            M[i] = malloc(cols * sizeof(int));
+            for(j=0;j<cols;j++){
+                printf("Enter %d %d : ", i, j);
+                scanf("%d", &M[i][j]);
+            }
+        }
+    return M;
+}
+
+int** multiply_matrix (int **A, int **B, int rowsA, int colsA, int rowsB, int colsB) {
+    if (colsA != rowsB){
+        printf("'colsA' != 'rowsB'. Sry\n");
+        exit(EXIT_FAILURE);
+    }
+    int i, j, cycle,
+        sum;
+    int **C = malloc(rowsA*sizeof(int*));
+    for(i = 0; i < rowsA; ++i){
+        C[i] = malloc(colsB*sizeof(int));
+        for(j = 0; j < colsB; ++j){
+            C[i][j] = 0;
+        }
+    }
+
+    for(i = 0; i < rowsA; ++i){
+        for(j = 0; j < colsB; ++j){
+            //sum = 0;
+            for(cycle = 0, sum = 0; cycle < colsA; cycle++)
+                sum += A[i][cycle] * B[cycle][j];
+            C[i][j] = sum;
+        }
+    }
+    return C;
+}
+
+frac** multiply_matrix_frac (frac **A, frac **B, int rowsA, int colsA, int rowsB, int colsB) {
+    if (colsA != rowsB){
+        printf("'colsA' != 'rowsB'. Sry\n");
+        exit(EXIT_FAILURE);
+    }
+    int i, j, cycle;
+    frac sum;
+    frac **C = malloc(rowsA*sizeof(frac*));
+    frac multiple;
+    for(i = 0; i < rowsA; ++i){
+        C[i] = malloc(colsB*sizeof(frac));
+        for(j = 0; j < colsB; ++j){
+            C[i][j].num = 0;
+            C[i][j].denom = 1;
+        }
+    }
+
+    for(i = 0; i < rowsA; ++i){
+        for(j = 0; j < colsB; ++j){
+            sum = create_frac(0, 1);
+            for(cycle = 0; cycle < colsA; cycle++){
+                //printf("%d/%d %d/%d\n", A[i][cycle].num, A[i][cycle].denom, B[cycle][j].num, B[cycle][j].denom);
+                multiple = mult_frac(A[i][cycle], B[cycle][j]);
+                //printf("mult : %d/%d\n ", multiple.num, multiple.denom);
+                //printf("%d %d %d %d/%d\n", i, j, cycle, sum.num, sum.denom);
+                sum = sum_frac(sum, multiple);
+            }
+            C[i][j] = sum;
+        }
+    }
+    return C;
+}
+
+frac** intM_to_fracM_dop(int rows, int cols, int** ptM){
+    int i, j;
+    frac **pfrM = malloc(rows * sizeof(frac*));
+    for (i=0;i<rows;i++){
+        pfrM[i] = malloc(cols * sizeof(frac));
+        for (j=0;j<cols;j++){
+            pfrM[i][j].num = ptM[i][j];
+            pfrM[i][j].denom = 1;
+        }
+    }
+    return pfrM;
+}
 
 
 
