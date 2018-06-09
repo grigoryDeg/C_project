@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <locale.h>
 #define N 4
-#define MAX_NUM_LENGTH 10 //with minus
+#define MAX_NUM_LENGTH 10
 
 typedef struct {
-    int num; //÷èñëèòåëü
-    int denom; //çíàìåíàòåëü
-}frac; //fraction - äðîáü, ëîë
+    int num;
+    int denom;
+}frac;
 
 int** readM();
 void show_intM(int** ptM, int sizeM, char* text);
@@ -17,10 +17,10 @@ void sum_strM(int str1, int str2, frac coeff, frac** pfrM, int sizestr);
 frac** intM_to_fracM(int sizeM, int** ptM);
 void show_fracM(frac** pfrM, int rows, int cols, char* text);
 void extendingM(frac** pfrM, int sizeM);
-void zeroing(FILE *pf, frac** pfrM, int rows, int cols); //size - num of rows
+void zeroing(FILE *pf, frac** pfrM, int rows, int cols);
 int eukl_NOD(int a, int b);
 void swap_strM(int str1, int str2, frac** pfrM);
-void reduc_frac(frac** frac_ptr_mass, int mass_size); //ñîêðàùåíèå äðîáåé
+void reduc_frac(frac** frac_ptr_mass, int mass_size);
 void make_invM(frac** pfrM, int rows, int cols);
 frac sum_frac(frac fr1, frac fr2);
 frac div_frac(frac fr1, frac fr2);
@@ -29,7 +29,7 @@ frac create_frac(int num, int denom);
 void checking_det_det(int** ptM, int sizeM);
 void zero_issue(int problem_str, frac** pfrM, int rows, int cols);
 void print_matrix(FILE *pfile ,int** pA, int rows, int cols);
-void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols);
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup);
 int** get_matrix(int rows, int cols);
 int** multiply_matrix (int **A, int **B, int rowsA, int colsA, int rowsB, int colsB);
 frac** multiply_matrix_frac (frac **A, frac **B, int rowsA, int colsA, int rowsB, int colsB);
@@ -40,6 +40,7 @@ int main(){
     FILE *pf;
     pf = fopen("new_file.tex", "w");
     int **ptM = readM();
+    int** H = get_matrix(N, 1);
     int detM;
     if (ptM != NULL){
         show_intM(ptM, N, "");
@@ -55,6 +56,7 @@ int main(){
                 fputs("\\usepackage[russian]{babel}\n", pf);
                 fputs("\\usepackage{amsmath}\n", pf);
                 fputs("\\usepackage{hyperref}\n", pf);
+                fputs("\\usepackage[margin=2cm]{geometry}\n", pf);
                 fputs("\\newenvironment{comment}{}{}\n", pf);
                 fputs("\\textwidth= 18 cm\n", pf);
                 fputs("\\oddsidemargin= -0.5 cm\n", pf);
@@ -66,31 +68,57 @@ int main(){
                 fputs("\\maketitle\n", pf);
                     printf("Determinant of the Matrix is not null, so we'll continue...\n");
                     printf("HERE WE GO\n\n");
-                        fputs("\\noindent Matrix of integers:\\\\[6pt] \n", pf);
+                        fputs("\\noindent Matrix of integers and matrix to multiply to:\\\\[6pt] \n", pf);
                         fputs("$\n", pf);
+                        fputs("A = \n", pf);
                         print_matrix(pf, ptM, N, N);
+                        fputs("$\n", pf);
+                        fputs("\\hspace{2cm} \n", pf);
+                        fputs("$\n", pf);
+                        fputs("B = \n", pf);
+                        print_matrix(pf, H, N, 1);
                         fputs("$\\\\[6pt] \n", pf);
                     frac** pfrM = intM_to_fracM(N, ptM);
                     extendingM(pfrM, N);
                     show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
                         fputs("Gauss matrix:\\\\[6pt] \n", pf);
-                        print_matrix_frac(pf, pfrM, N, 2*N);
+                        print_matrix_frac(pf, pfrM, N, 2*N, 1);
                     zeroing(pf, pfrM, N, N*2);
                     make_invM(pfrM, N, N*2); //sizes of extended Matrix
-                        fputs("Now we're deviding each row to coefficients we need\\\\[6pt] \n", pf);
-                    show_fracM(pfrM, N, N, "And finally, we have the Matrix:\n");
+                        fputs("Now we're deviding each row to coefficients we need\\\\ \n", pf);
+                    show_fracM(pfrM, N, N, "And finally, we have the Reverse Matrix (A^(-1)):\n");
                         fputs("And finally, we have the Matrix:\\\\[6pt] \n", pf);
-                    print_matrix_frac(pf, pfrM, N, N);
-                        fputs("\\end{document}\n", pf);
-
-                        puts("\n");
-                    int** H = get_matrix(4, 1);
+                    print_matrix_frac(pf, pfrM, N, N, 1);
+                    puts("\n");
+                        fputs("\\\\ \n", pf);
+                        fputs("Now we've got the matrix equation of type:\\\\ \n", pf);
+                        fputs("$ A*X = B $ \\\\ \n", pf);
+                        fputs("To solve it we need to multiply each part of equation to $ A^{-1} $: \\\\ \n", pf);
+                        fputs("$ A^{-1}*A*X = A^{-1}*B $\\\\ \n", pf);
+                        fputs("Then we get the formula of X matrix:\\\\ \n", pf);
+                        fputs("$ X = A^{-1}*B $\\\\[6pt] \n", pf);
                     frac** ptH = intM_to_fracM_dop(N, 1, H);
                     frac** X = multiply_matrix_frac(pfrM , ptH, N, N, N, 1);
-                    show_fracM(X, N, 1 , "Multiplied matrix (X) : \n");
+                        fputs("$ X = $\n", pf);
+                        print_matrix_frac(pf, pfrM, N, N, 2);
+                        fputs("$*$ \n", pf);
+                        print_matrix_frac(pf, ptH, N, 1, 0);
+                        fputs("$ = $ \n", pf);
+                        print_matrix_frac(pf, X, N, 1, 1);
+                        fputs("Then we'll check ourseves: \n", pf);
+                        fputs("$ A*X = B $:\\\\[6pt] \n", pf);
+                        print_matrix_frac(pf, pfrM, N, N, 0);
+                        fputs("$*$ \n", pf);
+                        print_matrix_frac(pf, X, N, 1, 0);
+                        fputs("$ = $ \n", pf);
+                        print_matrix_frac(pf, ptH, N, 1, 1);
+                        fputs("Check successful, reverse (X) matrix is:\\\\[6pt] \n", pf);
+                        print_matrix_frac(pf, pfrM, N, N, 1);
+                    /*show_fracM(X, N, 1 , "Multiplied matrix (X) : \n");
                     frac ** original = intM_to_fracM(N, ptM);
-                    //show_fracM(multiply_matrix_frac(pfrM, original, N, N, N, N), N, N, "dadada ya\n");
-                    show_fracM(multiply_matrix_frac(original, X, N, N, N, 1), N, 1, "LET'S CHECK: \n");
+                    show_fracM(multiply_matrix_frac(pfrM, original, N, N, N, N), N, N, "dadada ya\n");
+                    show_fracM(multiply_matrix_frac(original, X, N, N, N, 1), N, 1, "LET'S CHECK: \n"); */
+                    fputs("\\end{document}\n", pf);
 
             }
             else {
@@ -365,12 +393,12 @@ void zeroing(FILE *pf, frac** pfrM, int rows, int cols){
                 if (pfrM[j][i].num == 0)
                     continue;
                 cff = div_frac(pfrM[i][i], pfrM[j][i]);
-                printf("We're subtracting %d from %d string with coefficient %d/%d\n", j+1, i+1, cff.num, cff.denom);
-                fprintf(pf,"We're subtracting %d from %d string with coefficient %d/%d: \n", j+1, i+1, cff.num, cff.denom);
+                printf("We're subtracting %d from %d string with coefficient %d/%d\n", i+1, j+1, cff.num, cff.denom);
+                fprintf(pf,"We're subtracting %d from %d string with coefficient %d/%d: \n", i+1, j+1, cff.num, cff.denom);
                 cff.num = -cff.num; //for vychitanie strok
                 sum_strM(j, i, cff, pfrM, cols);
                 show_fracM(pfrM, rows, cols, "Result:\n");
-                print_matrix_frac(pf, pfrM, rows, cols);
+                print_matrix_frac(pf, pfrM, rows, cols, 1);
             }
         }
     }
@@ -407,41 +435,46 @@ void zero_issue(int problem_str, frac** pfrM, int rows, int cols){
 }
 
 void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {
-    fputs("\\begin{vmatrix}\n", pfile);
+    fputs("\\begin{pmatrix}\n", pfile);
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j) {
             if( j != cols - 1) {
                 // printf("%i ", pA[i][j]);
-                fprintf(pfile, "%i & ", pA[i][j]);
+                fprintf(pfile, "{%i} & ", pA[i][j]);
             }
             else{
                  // printf("%i ", pA[i][j]);
-                fprintf(pfile, "%i\\\\ ", pA[i][j]);
+                fprintf(pfile, "{%i}\\\\ ", pA[i][j]);
             }
             }
         //printf("\n");
         fprintf(pfile, "\n");
     }
-    fputs("\\end{vmatrix}\n", pfile);
+    fputs("\\end{pmatrix}\n", pfile);
 }
 
-void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols){
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup){
     int i, j;
     fputs("$\n", pfile);
-    fputs("\\begin{vmatrix}\n", pfile);
+    fputs("\\begin{pmatrix}\n", pfile);
     for(i=0;i<rows;i++){
         for(j=0;j<cols;j++) {
             if(j != cols - 1) {
-                fprintf(pfile, "\\tfrac{%d}%d & ", pfrM[i][j].num, pfrM[i][j].denom);
+                fprintf(pfile, "\\tfrac{%d}{%d} & ", pfrM[i][j].num, pfrM[i][j].denom);
             }
             else{
-                fprintf(pfile, "\\tfrac{%d}%d\\\\\n", pfrM[i][j].num, pfrM[i][j].denom);
+                fprintf(pfile, "\\tfrac{%d}{%d}\\\\\n", pfrM[i][j].num, pfrM[i][j].denom);
             }
         }
         fprintf(pfile, "\n");
     }
-    fputs("\\end{vmatrix}\n", pfile);
-    fputs("$\\\\[6pt] \n",pfile);
+    fputs("\\end{pmatrix}\n", pfile);
+    if(otstup == 1) {
+        fputs("$\\\\[6pt] \n",pfile);
+    }
+    else{
+        fputs("$ \n",pfile);
+    }
 }
 
 int** get_matrix(int rows, int cols) {
