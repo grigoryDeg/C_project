@@ -3,16 +3,13 @@
 #include <locale.h>
 #define N 4
 
-
-void print_matrix(float matrix[N][2*N]) {
-    puts("\n");
-    for(int i=0; i<N; ++i) {
-        for(int j=0; j<2*N; ++j) {
-                printf("%3.3f ", matrix[i][j]);
+ void show_matrix(int **matrix, int rows, int cols) {
+    for(int i = 0; i < rows; ++i) {
+        for(int j = 0; j < cols; ++j) {
+            printf("%3i ", matrix[i][j]);
         }
         puts("\n");
     }
-    puts("\n");
 }
 
 int main (void)
@@ -23,7 +20,7 @@ int main (void)
     int A_help[N][N];
     int A_help_transp[N][N];
     float A_help_transp_fl[N][N];
-    int i,j, line, floor;
+    int i,j, line, floor, p;
     int determinant = 0;
     float reverse_determinant;
     int MASS[N][N-1];
@@ -35,30 +32,32 @@ int main (void)
     float GAUSS_fl_1[N-1][N-1];
     float GAUSS_fl_2[N-2][N-2];
 
-    //Замазанное: ввод матрицы с клавиатуры и вывод ее в консоль:
-    /*for(i = 0; i < N; ++i) {
+   /* for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
             scanf("%3d", &p);
             A[i][j] = p;
         }
     }
-    printf("\n\n");
+    printf("\n\n"); */
+
+        //Вывод рандомной матрицы 4*4:
     for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
-            printf("%3d ",A[i][j]);
+            A[i][j] = rand() % 30 + 1;
+            printf("%3d ", A[i][j]);
         }
         puts("\n");
     }
-    */
 
+    show_matrix(A, N, N);
     //Вывод рандомной матрицы 4*4:
-    for(i = 0; i < N; ++i) {
+    /*for(i = 0; i < N; ++i) {
         for(j = 0; j < N; ++j) {
             A[i][j] = rand() % 30 + 1;
             printf("%3d ",A[i][j]);
         }
         puts("\n");
-    }
+    } */
 
     //Outlining floors and lines:
     printf("\n\n");
