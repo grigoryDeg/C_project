@@ -26,14 +26,19 @@ frac sum_frac(frac fr1, frac fr2);
 frac div_frac(frac fr1, frac fr2);
 frac mult_frac(frac fr1, frac fr2);
 frac create_frac(int num, int denom);
-void checking_det_det(int** ptM, int sizeM);
-void zero_issue(int problem_str, frac** pfrM, int rows, int cols);
-void print_matrix(FILE *pfile ,int** pA, int rows, int cols);
-void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup);
+int checking_det(int** ptM, int sizeM);
+void zero_issue(FILE *pfile, int problem_str, frac** pfrM, int rows, int cols);
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols, char* type);
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup, char* type);
 int** get_matrix(int rows, int cols);
 int** multiply_matrix (int **A, int **B, int rowsA, int colsA, int rowsB, int colsB);
 frac** multiply_matrix_frac (frac **A, frac **B, int rowsA, int colsA, int rowsB, int colsB);
 frac** intM_to_fracM_dop(int rows, int cols, int** ptM);
+int** minor_matrix(int** origin_matrix, FILE *pfile);
+int** transposing (int** matrix);
+frac** multi_to_transp_frac(frac** matrix, frac coeff);
+int checking_det_thr(int **massives_minor);
+
 
 
 int main(){
@@ -50,7 +55,7 @@ int main(){
         }
         else {
             if(pf != NULL) {
-                printf("New file created successfully\n");
+                //printf("New file created successfully\n");
                 fputs("\\documentclass{article}\n", pf);
                 fputs("\\usepackage[utf8]{inputenc}\n", pf);
                 fputs("\\usepackage[russian]{babel}\n", pf);
@@ -66,29 +71,48 @@ int main(){
                 fputs("\\title{Task 2; Raschetka 3}\n", pf);
                 fputs("\\date{}\n", pf);
                 fputs("\\maketitle\n", pf);
-                    printf("Determinant of the Matrix is not null, so we'll continue...\n");
-                    printf("HERE WE GO\n\n");
+                    //printf("Determinant of the Matrix is not null, so we'll continue...\n");
+                    //printf("HERE WE GO\n\n");
                         fputs("\\noindent Matrix of integers and matrix to multiply to:\\\\[6pt] \n", pf);
                         fputs("$\n", pf);
                         fputs("A = \n", pf);
-                        print_matrix(pf, ptM, N, N);
+                        print_matrix(pf, ptM, N, N, "");
                         fputs("$\n", pf);
                         fputs("\\hspace{2cm} \n", pf);
                         fputs("$\n", pf);
                         fputs("B = \n", pf);
-                        print_matrix(pf, H, N, 1);
+                        print_matrix(pf, H, N, 1, "");
                         fputs("$\\\\[6pt] \n", pf);
+                    //show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
+                        fputs("1.Using formula:\\\\[6pt] \n", pf);
+                    int **mEnor = minor_matrix(ptM, pf);
+                    //show_intM(mEnor, N, "fuck bitch\n");
+                    fputs("So now we've got the minor matrix\\\\[6pt]\n", pf);
+                    fputs("$\n", pf);
+                    print_matrix(pf, mEnor, N, N, "");
+                    fputs("$\\\\[6pt] \n", pf);
+                    int **transposed = transposing(mEnor);
+                    fputs("$\n", pf);
+                    print_matrix(pf, transposed, N, N, "");
+                    fputs("$\\\\[6pt] \n", pf);
+                    //show_intM(transposed, N, "transposed:\n");
+                    int **frac_transposed = intM_to_fracM(N, transposed);
+                    //show_fracM(frac_transposed, N, N, "I make it nigga\n");
+                    frac determ = create_frac(1, checking_det(ptM, N));
+                    frac ** reverse_mat = multi_to_transp_frac(frac_transposed, determ);
+                    reduc_frac(reverse_mat, N);
+                    show_fracM(reverse_mat, N, N, "DONE\n");
+
                     frac** pfrM = intM_to_fracM(N, ptM);
                     extendingM(pfrM, N);
-                    show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
-                        fputs("Gauss matrix:\\\\[6pt] \n", pf);
-                        print_matrix_frac(pf, pfrM, N, 2*N, 1);
+                        fputs("Gauss matrix:\\\\ \n", pf);
+                        print_matrix_frac(pf, pfrM, N, 2*N, 1, "");
                     zeroing(pf, pfrM, N, N*2);
                     make_invM(pfrM, N, N*2); //sizes of extended Matrix
                         fputs("Now we're deviding each row to coefficients we need\\\\ \n", pf);
                     show_fracM(pfrM, N, N, "And finally, we have the Reverse Matrix (A^(-1)):\n");
                         fputs("And finally, we have the Matrix:\\\\[6pt] \n", pf);
-                    print_matrix_frac(pf, pfrM, N, N, 1);
+                    print_matrix_frac(pf, pfrM, N, N, 1, "");
                     puts("\n");
                         fputs("\\\\ \n", pf);
                         fputs("Now we've got the matrix equation of type:\\\\ \n", pf);
@@ -100,25 +124,26 @@ int main(){
                     frac** ptH = intM_to_fracM_dop(N, 1, H);
                     frac** X = multiply_matrix_frac(pfrM , ptH, N, N, N, 1);
                         fputs("$ X = $\n", pf);
-                        print_matrix_frac(pf, pfrM, N, N, 2);
+                        print_matrix_frac(pf, pfrM, N, N, 2, "");
                         fputs("$*$ \n", pf);
-                        print_matrix_frac(pf, ptH, N, 1, 0);
+                        print_matrix_frac(pf, ptH, N, 1, 0, "");
                         fputs("$ = $ \n", pf);
-                        print_matrix_frac(pf, X, N, 1, 1);
+                        print_matrix_frac(pf, X, N, 1, 1, "");
                         fputs("Then we'll check ourseves: \n", pf);
                         fputs("$ A*X = B $:\\\\[6pt] \n", pf);
-                        print_matrix_frac(pf, pfrM, N, N, 0);
+                        print_matrix_frac(pf, pfrM, N, N, 0, "");
                         fputs("$*$ \n", pf);
-                        print_matrix_frac(pf, X, N, 1, 0);
+                        print_matrix_frac(pf, X, N, 1, 0, "");
                         fputs("$ = $ \n", pf);
-                        print_matrix_frac(pf, ptH, N, 1, 1);
+                        print_matrix_frac(pf, ptH, N, 1, 1, "");
                         fputs("Check successful, reverse (X) matrix is:\\\\[6pt] \n", pf);
-                        print_matrix_frac(pf, pfrM, N, N, 1);
+                        print_matrix_frac(pf, pfrM, N, N, 1, "");
                     /*show_fracM(X, N, 1 , "Multiplied matrix (X) : \n");
                     frac ** original = intM_to_fracM(N, ptM);
                     show_fracM(multiply_matrix_frac(pfrM, original, N, N, N, N), N, N, "dadada ya\n");
                     show_fracM(multiply_matrix_frac(original, X, N, N, N, 1), N, 1, "LET'S CHECK: \n"); */
                     fputs("\\end{document}\n", pf);
+
 
             }
             else {
@@ -201,7 +226,7 @@ void show_intM(int** ptM, int sizeM, char* text){
     int i, j;
     for(i=0;i<sizeM;i++){
         for(j=0;j<sizeM;j++)
-            printf("%d ", ptM[i][j]);
+            printf("%3d ", ptM[i][j]);
         printf("\n");
     }
     printf("\n");
@@ -385,7 +410,7 @@ void zeroing(FILE *pf, frac** pfrM, int rows, int cols){
     vse_zanovo:
     for (i=0;i<cols/2;i++){
         if (pfrM[i][i].num == 0){
-            zero_issue(i, pfrM, rows, cols);
+            zero_issue(pf, i, pfrM, rows, cols);
             goto vse_zanovo;
         }
         for (j=0;j<rows;j++){
@@ -393,12 +418,12 @@ void zeroing(FILE *pf, frac** pfrM, int rows, int cols){
                 if (pfrM[j][i].num == 0)
                     continue;
                 cff = div_frac(pfrM[i][i], pfrM[j][i]);
-                printf("We're subtracting %d from %d string with coefficient %d/%d\n", i+1, j+1, cff.num, cff.denom);
-                fprintf(pf,"We're subtracting %d from %d string with coefficient %d/%d: \n", i+1, j+1, cff.num, cff.denom);
+                //printf("We're multiplying %d string to the coefficient %d/%d then substucting %d string from it:\n", j+1,cff.num, cff.denom, i+1);
+                fprintf(pf,"We're multiplying %d string to the coefficient %d/%d then substucting %d string from it:\n", j+1,cff.num, cff.denom, i+1);
                 cff.num = -cff.num; //for vychitanie strok
                 sum_strM(j, i, cff, pfrM, cols);
-                show_fracM(pfrM, rows, cols, "Result:\n");
-                print_matrix_frac(pf, pfrM, rows, cols, 1);
+                //show_fracM(pfrM, rows, cols, "Result:\n");
+                print_matrix_frac(pf, pfrM, rows, cols, 1, "");
             }
         }
     }
@@ -422,20 +447,27 @@ void make_invM(frac** pfrM, int rows, int cols){
     }
 }
 
-void zero_issue(int problem_str, frac** pfrM, int rows, int cols){
+void zero_issue(FILE *pfile, int problem_str, frac** pfrM, int rows, int cols){
     int k;
     for (k=0;k<rows;k++){
         //printf("swap_loop %d %d %d\n", problem_str, k, pfrM[k][problem_str].num);
         if (pfrM[k][problem_str].num != 0 && pfrM[problem_str][k].num != 0){
             swap_strM(problem_str, k, pfrM);
-            printf("We just have swaped %d è %d strings.\n", k+1, problem_str+1);
-            show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
+            //printf("We just have swaped %d and %d strings.\n", k+1, problem_str+1);
+            fprintf(pfile, "We just have swaped %d and %d strings:\n", k+1, problem_str+1);
+            //show_fracM(pfrM, rows, cols, "The Matrix after the swap:\n");
+            print_matrix_frac(pfile, pfrM, rows, cols, 1, "pmatrix");
         }
     }
 }
 
-void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {
-    fputs("\\begin{pmatrix}\n", pfile);
+void print_matrix(FILE *pfile ,int** pA, int rows, int cols, char* type) {
+    if(type == "vmatrix") {
+        fputs("\\begin{vmatrix}\n", pfile);
+    }
+    else{
+        fputs("\\begin{pmatrix}\n", pfile);
+    }
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j) {
             if( j != cols - 1) {
@@ -450,13 +482,23 @@ void print_matrix(FILE *pfile ,int** pA, int rows, int cols) {
         //printf("\n");
         fprintf(pfile, "\n");
     }
-    fputs("\\end{pmatrix}\n", pfile);
+    if(type == "vmatrix") {
+        fputs("\\end{vmatrix}\n", pfile);
+    }
+    else{
+        fputs("\\end{pmatrix}\n", pfile);
+    }
 }
 
-void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup){
+void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup, char* type){
     int i, j;
     fputs("$\n", pfile);
-    fputs("\\begin{pmatrix}\n", pfile);
+    if(type == "vmatrix") {
+        fputs("\\begin{vmatrix}\n", pfile);
+    }
+    else{
+        fputs("\\begin{pmatrix}\n", pfile);
+    }
     for(i=0;i<rows;i++){
         for(j=0;j<cols;j++) {
             if(j != cols - 1) {
@@ -468,7 +510,12 @@ void print_matrix_frac(FILE *pfile, frac** pfrM, int rows, int cols, int otstup)
         }
         fprintf(pfile, "\n");
     }
-    fputs("\\end{pmatrix}\n", pfile);
+    if(type == "vmatix") {
+        fputs("\\end{vmatrix}\n", pfile);
+    }
+    else{
+        fputs("\\end{pmatrix}\n", pfile);
+    }
     if(otstup == 1) {
         fputs("$\\\\[6pt] \n",pfile);
     }
@@ -562,9 +609,97 @@ frac** intM_to_fracM_dop(int rows, int cols, int** ptM){
     return pfrM;
 }
 
+int** minor_matrix(int** origin_matrix, FILE *pfile) {
+    int i, j, key, key2, determinant_minor;
+    int** MASS = malloc((N-1)*sizeof(int*));
+    for(i = 0; i < N; ++i) {
+        MASS[i] = malloc((N-1)*sizeof(int));
+    }
+    int** mEnor = malloc(N*sizeof(int*));
+    for(i = 0; i < N; ++i) {
+        mEnor[i] = malloc(N*sizeof(int));
+    }
+        for(key = 0; key < N; ++key) {
+            for(key2 = 0; key2 < N; ++key2) {
+                for(i = 0; i < N - 1; ++i) {
+                    for(j = 0; j < N - 1; ++j) {
+                        if( j < key) {
+                            if( i < key2) {
+                                MASS[i][j] = origin_matrix[i][j];
+                            }
+                            else {
+                                MASS[i][j] = origin_matrix[i+1][j];
+                            }
+                        }
+                        else {
+                            if( i < key2) {
+                                MASS[i][j] = origin_matrix[i][j+1];
+                            }
+                            else {
+                                MASS[i][j] = origin_matrix[i+1][j+1];
+                            }
+                        }
+                    }
+                }
+                if((key+key2)%2 == 0) {
+                    determinant_minor = checking_det_thr(MASS);
+                }
+                else{
+                    determinant_minor = -checking_det_thr(MASS);
+                }
+                mEnor[key2][key] = determinant_minor;
+                    fprintf(pfile, "After deleting %d string and %d line: \n", key2 + 1, key + 1);
+                    fputs("$\n", pfile);
+                    print_matrix(pfile, MASS, N - 1, N - 1, "vmatrix");
+                    fputs("$\\\\[6pt] \n", pfile);
+                    fprintf(pfile, "Determinant of this minor is %d.\\\\[6pt]\n", checking_det(MASS, N - 1));
+            }
+        }
+    return mEnor;
+}
 
+int** transposing (int **matrix) {
+    int i, j;
+    int** dop = malloc(N*sizeof(int*));
+    for(i = 0; i < N; ++i) {
+        dop[i] = malloc(N*sizeof(int));
+    }
+    for(i = 0; i < N; ++i) {
+        for(j = 0; j < N; ++j) {
+            dop[i][j] = matrix[i][j];
+        }
+    }
+    for(i = 0; i < N; ++i) {
+        for(j = 0; j < N; ++j) {
+            matrix[i][j] = dop[j][i];
+        }
+    }
+    return matrix;
+}
 
+frac** multi_to_transp_frac(frac** matrix, frac coeff){
+    int i, j;
+    frac abs;
+    for(i = 0; i < N; ++i) {
+        for(j = 0; j < N; ++j) {
+            matrix[i][j] = mult_frac(matrix[i][j], coeff);
+            if(matrix[i][j].denom < 0) {
+                matrix[i][j].num = -matrix[i][j].num;
+                matrix[i][j].denom = -matrix[i][j].denom;
+            }
+        }
+    }
+    return matrix;
+}
 
-
+int checking_det_thr(int **massives_minor) {
+          int  det =           massives_minor[0][0]*massives_minor[1][1]*massives_minor[2][2] +
+                               massives_minor[1][0]*massives_minor[2][1]*massives_minor[0][2] +
+                               massives_minor[0][1]*massives_minor[1][2]*massives_minor[2][0] -
+                               massives_minor[2][0]*massives_minor[1][1]*massives_minor[0][2] -
+                               massives_minor[1][0]*massives_minor[0][1]*massives_minor[2][2] -
+                               massives_minor[1][2]*massives_minor[2][1]*massives_minor[0][0];
+    return det;
+}
 
 
