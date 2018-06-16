@@ -38,7 +38,7 @@ int** minor_matrix(int** origin_matrix, FILE *pfile);
 int** transposing (int** matrix);
 frac** multi_to_transp_frac(frac** matrix, frac coeff);
 int checking_det_thr(int **massives_minor);
-
+void calculating_det(FILE *pfile, int **massives_minor);
 
 
 int main(){
@@ -71,8 +71,6 @@ int main(){
                 fputs("\\title{Task 2; Raschetka 3}\n", pf);
                 fputs("\\date{}\n", pf);
                 fputs("\\maketitle\n", pf);
-                    //printf("Determinant of the Matrix is not null, so we'll continue...\n");
-                    //printf("HERE WE GO\n\n");
                         fputs("\\noindent Matrix of integers and matrix to multiply to:\\\\[6pt] \n", pf);
                         fputs("$\n", pf);
                         fputs("A = \n", pf);
@@ -83,29 +81,33 @@ int main(){
                         fputs("B = \n", pf);
                         print_matrix(pf, H, N, 1, "");
                         fputs("$\\\\[6pt] \n", pf);
-                    //show_fracM(pfrM, N, N*2 , "Gauss matrix\n");
-                        fputs("1.Using formula:\\\\[6pt] \n", pf);
+                        fputs("{\\bf 1.Using formula:}\\\\ \n", pf);
+                        fputs("At first we need to make a minor matrix so let's find all the dets of A matrix:\\\\[6pt] \n", pf);
                     int **mEnor = minor_matrix(ptM, pf);
-                    //show_intM(mEnor, N, "fuck bitch\n");
-                    fputs("So now we've got the minor matrix\\\\[6pt]\n", pf);
-                    fputs("$\n", pf);
+                        fputs("So now we've got the minor matrix:\\\\[6pt]\n", pf);
+                        fputs("$\n", pf);
                     print_matrix(pf, mEnor, N, N, "");
-                    fputs("$\\\\[6pt] \n", pf);
+                        fputs("$\\\\[6pt] \n", pf);
+                        fputs("\\newpage \n", pf);
+                        fputs("\\noindent So now we've got the transposed minor matrix (help matrix):\\\\[6pt]\n", pf);
                     int **transposed = transposing(mEnor);
                     fputs("$\n", pf);
                     print_matrix(pf, transposed, N, N, "");
-                    fputs("$\\\\[6pt] \n", pf);
-                    //show_intM(transposed, N, "transposed:\n");
+                        fputs("$\\\\[6pt] \n", pf);
+                        fputs("Now we use the formula to find the reverse matrix:\\\\[6pt] \n", pf);
                     int **frac_transposed = intM_to_fracM(N, transposed);
-                    //show_fracM(frac_transposed, N, N, "I make it nigga\n");
                     frac determ = create_frac(1, checking_det(ptM, N));
+                        fprintf(pf, "$ A^{-1} = \\frac{1}{%d} *$ \n", checking_det(ptM, N));
+                        print_matrix_frac(pf, frac_transposed, N, N, 0, "pmatrix");
+                        fputs("$=$\n", pf);
                     frac ** reverse_mat = multi_to_transp_frac(frac_transposed, determ);
                     reduc_frac(reverse_mat, N);
                     show_fracM(reverse_mat, N, N, "DONE\n");
-
+                        print_matrix_frac(pf, reverse_mat, N, N, 1, "pmatrix");
+                        fputs("{\\bf 2.Using Gauss method:}\\\\", pf);
                     frac** pfrM = intM_to_fracM(N, ptM);
                     extendingM(pfrM, N);
-                        fputs("Gauss matrix:\\\\ \n", pf);
+                        fputs("Gauss matrix:\\\\[6pt] \n", pf);
                         print_matrix_frac(pf, pfrM, N, 2*N, 1, "");
                     zeroing(pf, pfrM, N, N*2);
                     make_invM(pfrM, N, N*2); //sizes of extended Matrix
@@ -115,6 +117,7 @@ int main(){
                     print_matrix_frac(pf, pfrM, N, N, 1, "");
                     puts("\n");
                         fputs("\\\\ \n", pf);
+                        fputs("{\\bf Solution of matrix equation, then check:}\\\\ \n", pf);
                         fputs("Now we've got the matrix equation of type:\\\\ \n", pf);
                         fputs("$ A*X = B $ \\\\ \n", pf);
                         fputs("To solve it we need to multiply each part of equation to $ A^{-1} $: \\\\ \n", pf);
@@ -129,7 +132,7 @@ int main(){
                         print_matrix_frac(pf, ptH, N, 1, 0, "");
                         fputs("$ = $ \n", pf);
                         print_matrix_frac(pf, X, N, 1, 1, "");
-                        fputs("Then we'll check ourseves: \n", pf);
+                        fputs("Then we'll check ourseves \n", pf);
                         fputs("$ A*X = B $:\\\\[6pt] \n", pf);
                         print_matrix_frac(pf, pfrM, N, N, 0, "");
                         fputs("$*$ \n", pf);
@@ -143,7 +146,6 @@ int main(){
                     show_fracM(multiply_matrix_frac(pfrM, original, N, N, N, N), N, N, "dadada ya\n");
                     show_fracM(multiply_matrix_frac(original, X, N, N, N, 1), N, 1, "LET'S CHECK: \n"); */
                     fputs("\\end{document}\n", pf);
-
 
             }
             else {
@@ -235,8 +237,8 @@ void show_intM(int** ptM, int sizeM, char* text){
 int** cutM(int row, int col, int** ptM){
     int i, j,
         rec_cntr = 0,
-        ctN = N - 1, //cuted N
-        **ptcM = malloc(ctN * sizeof(int*)); // pointer to cuted Matrix
+        ctN = N - 1, //cut N
+        **ptcM = malloc(ctN * sizeof(int*)); // pointer to cut Matrix
     for (i=0;i<N;i++){
         ptcM[i] = malloc(ctN * sizeof(int));
         for(j=0;j<N;j++){
@@ -274,7 +276,7 @@ int checking_det(int** ptM, int sizeM){
     }
     else
         det = ptM[0][0] * ptM[1][1] - ptM[0][1] * ptM[1][0];
-    return det;
+    return -det;
 }
 
 frac** intM_to_fracM(int sizeM, int** ptM){
@@ -386,13 +388,10 @@ frac div_frac(frac fr1, frac fr2){
 }
 
 frac mult_frac(frac fr1, frac fr2){
-    //printf("%d/%d ", fr1.num, fr1.denom);
-    //printf("%d/%d ", fr2.num, fr2.denom);
     fr1.num *= fr2.num;
     fr1.denom *= fr2.denom;
     frac* mass[] = {&fr1};
     reduc_frac(mass, 1);
-    //printf("%d/%d\n", fr1.num, fr1.denom);
     return fr1;
 }
 
@@ -651,8 +650,10 @@ int** minor_matrix(int** origin_matrix, FILE *pfile) {
                     fprintf(pfile, "After deleting %d string and %d line: \n", key2 + 1, key + 1);
                     fputs("$\n", pfile);
                     print_matrix(pfile, MASS, N - 1, N - 1, "vmatrix");
-                    fputs("$\\\\[6pt] \n", pfile);
-                    fprintf(pfile, "Determinant of this minor is %d.\\\\[6pt]\n", checking_det(MASS, N - 1));
+                    fputs("=\n", pfile);
+                    calculating_det(pfile, MASS);
+                    fputs("$\n", pfile);
+                    fprintf(pfile, "= \\fbox{%d}.\\\\[6pt]\n", checking_det(MASS, N - 1));
             }
         }
     return mEnor;
@@ -693,13 +694,24 @@ frac** multi_to_transp_frac(frac** matrix, frac coeff){
 }
 
 int checking_det_thr(int **massives_minor) {
-          int  det =           massives_minor[0][0]*massives_minor[1][1]*massives_minor[2][2] +
-                               massives_minor[1][0]*massives_minor[2][1]*massives_minor[0][2] +
-                               massives_minor[0][1]*massives_minor[1][2]*massives_minor[2][0] -
-                               massives_minor[2][0]*massives_minor[1][1]*massives_minor[0][2] -
-                               massives_minor[1][0]*massives_minor[0][1]*massives_minor[2][2] -
-                               massives_minor[1][2]*massives_minor[2][1]*massives_minor[0][0];
+    int  det =          massives_minor[0][0]*massives_minor[1][1]*massives_minor[2][2] +
+                        massives_minor[1][0]*massives_minor[2][1]*massives_minor[0][2] +
+                        massives_minor[0][1]*massives_minor[1][2]*massives_minor[2][0] -
+                        massives_minor[2][0]*massives_minor[1][1]*massives_minor[0][2] -
+                        massives_minor[1][0]*massives_minor[0][1]*massives_minor[2][2] -
+                        massives_minor[1][2]*massives_minor[2][1]*massives_minor[0][0];
     return det;
+}
+
+void calculating_det(FILE *pfile, int **massives_minor) {
+    fprintf(pfile, "(%d)*(%d)*(%d) + (%d)*(%d)*(%d) + (%d)*(%d)*(%d) - (%d)*(%d)*(%d) - (%d)*(%d)*(%d) - (%d)*(%d)*(%d)",
+           massives_minor[0][0], massives_minor[1][1], massives_minor[2][2],
+           massives_minor[1][0], massives_minor[2][1], massives_minor[0][2],
+           massives_minor[0][1], massives_minor[1][2], massives_minor[2][0],
+           massives_minor[2][0], massives_minor[1][1], massives_minor[0][2],
+           massives_minor[1][0], massives_minor[0][1], massives_minor[2][2],
+           massives_minor[1][2], massives_minor[2][1], massives_minor[0][0]);
+
 }
 
 
