@@ -95,7 +95,7 @@ int main(){
                     print_matrix(pf, transposed, N, N, "");
                         fputs("$\\\\[6pt] \n", pf);
                         fputs("Now we use the formula to find the reverse matrix:\\\\[6pt] \n", pf);
-                    int **frac_transposed = intM_to_fracM(N, transposed);
+                    frac **frac_transposed = intM_to_fracM(N, transposed);
                     frac determ = create_frac(1, checking_det(ptM, N));
                         fprintf(pf, "$ A^{-1} = \\frac{1}{%d} *$ \n", checking_det(ptM, N));
                         print_matrix_frac(pf, frac_transposed, N, N, 0, "pmatrix");

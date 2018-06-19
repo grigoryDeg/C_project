@@ -3,17 +3,27 @@
 #include <locale.h>
 #define N 5
 
-void print_matrix(FILE *pfile ,int* pA, int n, int m) {
+
+void print_matrix(FILE *pfile, int rows, int cols, int matrix[rows][cols]) {
     fputs("\\begin{vmatrix}\n", pfile);
-    for(int i=0; i<n; ++i) {
-        for(int j=0; j<m; ++j) {
-            if(j != m - 1) {
-//            printf("%3d &",*(pA+i*n+j));
-                fprintf(pfile,"%3d & ",*(pA+i*n+j));
+    int** pA = malloc(rows*sizeof(int*));
+    for(int i = 0; i < rows; ++i) {
+        pA[i] = malloc(cols*sizeof(int));
+    }
+    for(int i = 0; i < rows; ++i) {
+        for(int j = 0; j < rows; ++j) {
+            pA[i][j] = matrix[i][j];
+        }
+    }
+    for(int i=0; i<rows; ++i) {
+        for(int j=0; j<cols; ++j) {
+            if(j != cols - 1) {
+//              printf("%3d &",*(pA+i*n+j));
+                fprintf(pfile,"%3d & ", pA[i][j]);
             }
             else {
-//			printf("%3d\\\\\n ",*(pA+i*n+j));
-                fprintf(pfile,"%3d\\\\\n",*(pA+i*n+j));
+//			    printf("%3d\\\\\n ",*(pA+i*n+j));
+                fprintf(pfile,"%3d\\\\\n", pA[i][j]);
             }
         }
     }
@@ -155,37 +165,14 @@ int main (void)
         }
     }
 
-    //Different verifications:
-    /*printf(" Show needed minor 4*4 :\n\n");
-    for(o = 0; o < N-1; ++o) {
-        for(p = 0; p < N-1; ++p) {
-            printf("%3d", massives[4][o][p]);
-        }
-        puts("\n");
-    }
-
-    printf("\n");
-
-    printf(" Show needed minor 3*3:\n\n");
-    for(o = 0; o < N-2; ++o) {
-        for(p = 0; p < N-2; ++p) {
-            printf("%3d", massives_little[1][0][o][p]);
-        }
-        puts("\n");
-    } */
-
     printf("\n");
     printf("Calculate determinant of needed matrix 3*3: %i\n", det[1][2]);
-
     printf("\n");
     printf("Calculate determinant of needed matrix 4*4: %i\n", minor_dets[0]);
-
     printf("\n");
     printf("ANSWER: %li\n", determinant);
-
     printf("\n");
 
-    //File work:
     if(pf != NULL) {
         printf("New file created successfully\n");
         fputs("\\documentclass{article}\n", pf);
@@ -202,7 +189,7 @@ int main (void)
         fputs("\\date{}\n", pf);
         fputs("\\maketitle\n", pf);
         fputs("$\n", pf);
-        print_matrix(pf, A, N, N);
+        print_matrix(pf, N, N, A);
         fputs("=\n", pf);
         for(i = 0; i < N; ++i) {
             if(i%2 == 0) {
@@ -212,11 +199,10 @@ int main (void)
                 fprintf(pf, "-\n");
             }
             fprintf(pf, "%i\n", A[0][i]);
-            print_matrix(pf, massives[i], N-1, N-1);
+            print_matrix(pf, N-1, N-1, massives[i]);
         }
         fputs("$\n", pf);
         fputs("=\n", pf);
-        //
         fputs("$$\n", pf);
         fputs("=\n", pf);
         for(i = 0; i < N; ++i) {
@@ -238,7 +224,7 @@ int main (void)
         for(line = 0; line < N; ++line) {
             fputs("\\item\n", pf);
             fputs("$\n", pf);
-            print_matrix(pf, massives[line], N-1, N-1);
+            print_matrix(pf, N-1, N-1, massives[line]);
             fputs("=\n", pf);
             for(i = 0; i < N-1; ++i) {
                 if(i%2 == 0) {
@@ -248,7 +234,7 @@ int main (void)
                     fprintf(pf, "-\n");
                 }
                 fprintf(pf, "%i\n", massives[line][0][i]);
-                print_matrix(pf, massives_little[line][i], N-2, N-2);
+                print_matrix(pf, N-2, N-2, massives_little[line][i]);
             }
             fputs("=\n", pf);
             fputs("$\n", pf);
@@ -277,7 +263,6 @@ int main (void)
     else {
         fprintf(stderr, "Can not create a file\n");
     }
-
     fclose(pf);
 
     return 0;
